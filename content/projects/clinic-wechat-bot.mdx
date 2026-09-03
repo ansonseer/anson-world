@@ -1,0 +1,33 @@
+---
+title: Clinic WeChat Assistant
+slug: clinic-wechat-bot
+status: "shipped"
+honest_status_line: "Phase 1 delivered & live (idempotent webhook intake). Phase 2 — RAG + guardrails + evals — in development, not delivered."
+world_side: machine
+room: clinic
+stack: [Webhook ingestion, async processing, vector retrieval, Claude API]
+demo_url: ""
+summary: "A Sydney vet clinic's front desk was drowning in repeated calls. Phase 1 is live. The hard part isn't the model — it's proving the system can run unattended, safely."
+draft: false
+---
+
+## The problem
+A Sydney veterinary clinic where front-desk staff burned hours on the same calls, every day:
+opening hours, services, prices, booking rules.
+
+## Phase 1 — delivered and live
+Messages arrive through the platform's webhook. The endpoint returns immediately and processes
+asynchronously — because the platform retries any slow response, **every message ID is handled
+idempotently**. Without that one property, customers get answered twice. Boring correctness
+first; that's what "delivered" means.
+
+## Phase 2 — in development (not delivered, and it says so)
+Knowledge base chunked and indexed → vector retrieval → generation via the Claude API → safety
+guardrails: **no medical advice, ever; uncertainty hands off to a human; every reply passes a
+grounding check before sending.** Before launch, an eval set built from real call questions
+measures retrieval hit rate, groundedness, and correct-refusal rate.
+
+## The honest headline
+这个项目真正难的不是模型，是证明系统可以无人值守地安全运行。
+The hard part of this project isn't the model. It's proving the system can run unattended —
+safely.

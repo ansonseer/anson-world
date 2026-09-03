@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  /* palette: machine = cold instrument steel / human = Sydney night lamplight */
+  --bg: #0a0d12;
+  --bg-raise: #10141b;
+  --text: #e6e9ee;
+  --muted: #8b94a3;
+  --line: #1c232e;
+  --machine: #8fa8bf;
+  --machine-deep: #0b0f14;
+  --machine-signal: #57b8ad;
+  --human: #e0a866;
+  --human-deep: #14100b;
+  --human-soft: #f2e8d8;
+  --seam: #e8f1ff;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-syne), var(--font-inter), ui-sans-serif, sans-serif;
+}
+
+.font-lab {
+  font-family: var(--font-plex-mono), ui-monospace, "Cascadia Mono", monospace;
+}
+
+::selection {
+  background: rgba(232, 241, 255, 0.22);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.fade-up { animation: fadeUp 0.9s cubic-bezier(0.2, 0.6, 0.2, 1) both; }
+.fade-up-1 { animation-delay: 0.15s; }
+.fade-up-2 { animation-delay: 0.35s; }
+.fade-up-3 { animation-delay: 0.55s; }
+
+@keyframes seamGlow {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+.seam-glow { animation: seamGlow 3.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .fade-up { animation: none; }
+  .seam-glow { animation: none; }
+}

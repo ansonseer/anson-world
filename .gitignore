@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# builds
+build/
+dist/
+
+# env & secrets
+.env
+.env*.local
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# local tooling
+.claude/settings.local.json
+
+# art source archives (live on OneDrive + 即梦 cloud; web-ready derivatives go in public/worlds)
+assets/refs/
