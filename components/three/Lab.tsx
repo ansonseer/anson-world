@@ -73,7 +73,7 @@ function Figure({
       const phase = (t * 0.32) % 2;
       const tri = phase < 1 ? phase : 2 - phase;
       const dir = phase < 1 ? 1 : -1;
-      g.position.x = 1.6 + tri * 1.8;
+      g.position.x = 1.5 + tri * 1.7;
       g.position.y = Math.abs(Math.sin(t * 3.2)) * 0.02;
       const targetRot = dir > 0 ? Math.PI / 2 : -Math.PI / 2;
       g.rotation.y += (targetRot - g.rotation.y) * 0.07;
@@ -83,9 +83,9 @@ function Figure({
       if (coreMat.current) coreMat.current.emissiveIntensity = 1.3 + Math.sin(t * 2.0) * 0.5;
     }
 
-    // hover glow on the body
+    // hover glow on the body (the AI keeps a faint idle sheen so its form reads in the dark)
     if (bodyMat.current) {
-      const target = hover ? 0.35 : 0;
+      const target = hover ? 0.35 : variant === "ai" ? 0.07 : 0;
       bodyMat.current.emissiveIntensity +=
         (target - bodyMat.current.emissiveIntensity) * 0.15;
     }
@@ -97,8 +97,8 @@ function Figure({
 
   const human = variant === "human";
   const bodyColor = human ? "#d8d2c6" : "#aebfd2"; // lab-coat off-white vs machined alloy
-  const rough = human ? 0.92 : 0.28;
-  const metal = human ? 0.02 : 0.85;
+  const rough = human ? 0.92 : 0.35;
+  const metal = human ? 0.02 : 0.5; // high metalness reads pitch-black without an env map
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
@@ -112,8 +112,9 @@ function Figure({
 
   return (
     <group ref={group} position={position}>
+      {/* body grounded: capsule bottom sits on the floor */}
       <mesh
-        position={[0, 1.02, 0]}
+        position={[0, 0.82, 0]}
         castShadow
         onClick={handleClick}
         onPointerOver={over}
@@ -129,13 +130,9 @@ function Figure({
           emissiveIntensity={0}
         />
       </mesh>
-      <mesh position={[0, 1.48, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <capsuleGeometry args={[0.16, 0.5, 8, 20]} />
-        <meshStandardMaterial color={bodyColor} roughness={rough} metalness={metal} />
-      </mesh>
       {/* the chest core from D-final: a soft blue heart of light in the alloy */}
       {!human && (
-        <mesh position={[0, 1.3, 0.27]}>
+        <mesh position={[0, 1.18, 0.27]}>
           <sphereGeometry args={[0.055, 16, 16]} />
           <meshStandardMaterial
             ref={coreMat}
@@ -149,7 +146,7 @@ function Figure({
       )}
       <mesh
         ref={head}
-        position={[0, 1.95, 0]}
+        position={[0, 1.78, 0]}
         onClick={handleClick}
         onPointerOver={over}
         onPointerOut={out}
@@ -158,8 +155,8 @@ function Figure({
         <meshStandardMaterial
           ref={headMat}
           color={human ? "#cbbfae" : "#b8c8da"}
-          roughness={human ? 0.75 : 0.2}
-          metalness={human ? 0 : 0.9}
+          roughness={human ? 0.75 : 0.3}
+          metalness={human ? 0 : 0.5}
           emissive={human ? "#000000" : "#3b7ea8"}
           emissiveIntensity={human ? 0 : 0.45}
         />
@@ -173,7 +170,7 @@ function Figure({
       )}
 
       {hover && (
-        <Html position={[0, 2.5, 0]} center distanceFactor={7} style={{ pointerEvents: "none" }}>
+        <Html position={[0, 2.3, 0]} center distanceFactor={7} style={{ pointerEvents: "none" }}>
           <div className="font-lab whitespace-nowrap rounded-sm border border-[var(--seam)]/40 bg-black/60 px-3 py-1.5 text-[11px] tracking-[0.25em] text-[var(--text)] backdrop-blur-sm">
             {label}
           </div>
@@ -300,8 +297,8 @@ function ObservationStation() {
     [-0.26, 0.48, -0.62],
   ];
   return (
-    <group position={[0.1, 0, 0.35]}>
-      {/* desk runs front-to-back so the monitor can face the subject */}
+    <group position={[0.1, 0, 0.35]} rotation={[0, -0.55, 0]}>
+      {/* desk runs front-to-back; angled so the audience sees the scan too */}
       <mesh position={[0, 0.98, 0]} castShadow>
         <boxGeometry args={[0.7, 0.06, 1.5]} />
         <meshStandardMaterial color="#2a323d" roughness={0.5} metalness={0.6} />
@@ -432,10 +429,6 @@ function BackgroundBench() {
 }
 
 function Room() {
-  const stripMat = useRef<THREE.MeshBasicMaterial>(null);
-  useFrame(({ clock }) => {
-    if (stripMat.current) stripMat.current.opacity = 0.5 + Math.sin(clock.elapsedTime * 0.8) * 0.15;
-  });
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
@@ -446,10 +439,6 @@ function Room() {
       <mesh position={[0, 3.5, -5.2]}>
         <planeGeometry args={[30, 8]} />
         <meshStandardMaterial color="#0c1016" roughness={1} />
-      </mesh>
-      <mesh position={[0, 4.1, -5.15]}>
-        <planeGeometry args={[14, 0.05]} />
-        <meshBasicMaterial ref={stripMat} color={SEAM} transparent opacity={0.6} />
       </mesh>
       <mesh position={[3.4, 2.2, -5.1]}>
         <planeGeometry args={[2.6, 1.5]} />
@@ -500,8 +489,10 @@ function Lights() {
   }, []);
   return (
     <group>
-      <ambientLight intensity={0.13} />
-      <hemisphereLight args={["#26303c", "#05070a", 0.32]} />
+      <ambientLight intensity={0.22} />
+      <hemisphereLight args={["#2c3844", "#05070a", 0.5]} />
+      {/* soft audience-side fill so silhouettes read */}
+      <pointLight position={[0, 2.5, 6]} color="#8fa8bf" intensity={0.35} distance={12} decay={0} />
       <primitive object={humanTarget} />
       <primitive object={aiTarget} />
       {/* the subject is the hero: brighter key + cool rim */}
@@ -511,7 +502,7 @@ function Lights() {
         angle={0.55}
         penumbra={1}
         color={COLD}
-        intensity={2.6}
+        intensity={3.4}
         decay={0}
         castShadow
       />
@@ -523,7 +514,7 @@ function Lights() {
         angle={0.5}
         penumbra={1}
         color={WARM}
-        intensity={1.6}
+        intensity={2.3}
         decay={0}
         castShadow
       />
@@ -534,11 +525,13 @@ function Lights() {
 function CameraRig({ entering, onEntered, reducedMotion }: Omit<LabProps, "onRequestEnter">) {
   const { camera, pointer, size } = useThree();
   const aspect = size.width / Math.max(1, size.height);
-  const restZ = aspect < 0.8 ? 7.2 : aspect < 1.2 ? 6.1 : 5.2;
+  const restZ = aspect < 0.8 ? 8.4 : aspect < 1 ? 8.0 : aspect < 1.2 ? 6.6 : 5.2;
+  const lookX = aspect < 1 ? 0.15 : 0.55;
+  const baseX = aspect < 1 ? -0.05 : -0.35;
   const baseZ = useRef(reducedMotion ? restZ : restZ + 1.6);
   const done = useRef(false);
   // entering = flying into the Observer's head
-  const enterTarget = useMemo(() => new THREE.Vector3(-1.5, 1.88, 0.58), []);
+  const enterTarget = useMemo(() => new THREE.Vector3(-1.5, 1.78, 0.58), []);
 
   useFrame((_, dt) => {
     const d = Math.min(dt, 0.05);
@@ -554,10 +547,10 @@ function CameraRig({ entering, onEntered, reducedMotion }: Omit<LabProps, "onReq
     baseZ.current = THREE.MathUtils.damp(baseZ.current, restZ, 0.55, d);
     const px = reducedMotion ? 0 : pointer.x;
     const py = reducedMotion ? 0 : pointer.y;
-    camera.position.x = THREE.MathUtils.damp(camera.position.x, -0.35 + px * 0.55, 2.2, d);
+    camera.position.x = THREE.MathUtils.damp(camera.position.x, baseX + px * 0.55, 2.2, d);
     camera.position.y = THREE.MathUtils.damp(camera.position.y, 1.52 + py * 0.2, 2.2, d);
     camera.position.z = baseZ.current;
-    camera.lookAt(0.55, 1.28, 0);
+    camera.lookAt(lookX, 1.28, 0);
   });
   return null;
 }
@@ -573,7 +566,7 @@ function SceneContent({ entering, onEntered, onRequestEnter, reducedMotion }: La
   return (
     <>
       <color attach="background" args={[BG]} />
-      <fog attach="fog" args={[BG, 6.5, 17]} />
+      <fog attach="fog" args={[BG, 8.5, 22]} />
       <CameraRig entering={entering} onEntered={onEntered} reducedMotion={reducedMotion} />
       <Lights />
       <Room />

@@ -27,7 +27,7 @@ Only the following may ever be described with the words "delivered" / "交付":
 
 7. **Shoe Locator paid pilot** — see fact #1. A Sydney footwear logistics company; paid delivery.
 
-8. **WeChat assistant for a Sydney veterinary clinic.** Problem: front desk drowning in repeated calls (hours, services, prices, booking rules).
+8. **WeChat assistant for a Sydney veterinary clinic.** Problem: front desk drowning in repeated calls (hours, services, prices, booking rules). **The Phase 1 engagement was unpaid** (Ao 2026-09-04) — "delivered" is accurate, but never describe this project as paid work; only the Shoe Locator pilot (#7) was paid.
    - **Phase 1 — delivered and live:** messages arrive via platform webhook; the endpoint returns immediately and processes async. Because the platform retries slow responses, **every message ID is idempotent** — without that, customers get double replies.
    - **Phase 2 — in development, NOT delivered:** knowledge chunking → vector retrieval → Claude API generation → safety guardrails (no medical advice; uncertain → human handoff; pre-send grounding check) → an eval set built from real call questions, measuring retrieval hit rate, groundedness, and correct-refusal rate before launch.
    - The honest headline, verbatim: 这个项目真正难的不是模型，是证明系统可以无人值守地安全运行。Phase 2 may never be described as delivered until it ships.
