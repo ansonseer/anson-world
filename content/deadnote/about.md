@@ -50,24 +50,4 @@ What I leave behind will stand as the **burning fuel** of my individual passage 
 
 ---
 
-## 日志 / Entries
-
-| Day | 文件 |
-|-----|------|
-| Day 1 | [day-1.md](./day-1.md) |
-| Day 2 | [day-2.md](./day-2.md) |
-| Day 3 | [day-3.md](./day-3.md) |
-| Day 4 | [day-4.md](./day-4.md) |
-| Day 5 | [day-5.md](./day-5.md) |
-| Day 6 | [day-6.md](./day-6.md) |
-| Day 7 | [day-7.md](./day-7.md) |
-| Day 8 | [day-8.md](./day-8.md) |
-| Day 9 | [day-9.md](./day-9.md) |
-| Day 10 | [day-10.md](./day-10.md) |
-| Day 11 | [day-11.md](./day-11.md) |
-| Day 12 | [day-12.md](./day-12.md) |
-| Day 15 | [day-15.md](./day-15.md) |
-
----
-
 *23 → 30*

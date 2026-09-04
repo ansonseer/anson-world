@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { failedExperiments, identity, projects, statusLabel } from "@/lib/site-data";
+import { getProjects } from "@/lib/content";
+import { identity, statusLabel } from "@/lib/site-data";
 
 export const metadata: Metadata = {
   title: "Quick Profile — Anson Sun",
   description:
-    "AI engineer & builder. Working prototypes from first-hand observation, honest status lines included. The 30-second version of Anson World.",
+    "AI engineer & builder. Two systems delivered, one failed delivery written up publicly. The 30-second version of Anson World.",
 };
 
-function StatusBadge({ status }: { status: keyof typeof statusLabel }) {
+function StatusBadge({ status }: { status: string }) {
   const tone =
     status === "failed-experiment"
       ? "border-[var(--human)]/50 text-[var(--human)]"
@@ -17,12 +18,16 @@ function StatusBadge({ status }: { status: keyof typeof statusLabel }) {
         : "border-[var(--machine)]/50 text-[var(--machine)]";
   return (
     <span className={`font-lab whitespace-nowrap rounded-sm border px-2 py-1 text-[10px] tracking-[0.15em] ${tone}`}>
-      {statusLabel[status]}
+      {statusLabel[status] ?? status.toUpperCase()}
     </span>
   );
 }
 
 export default function ProfilePage() {
+  const all = getProjects();
+  const main = all.filter((p) => p.status !== "failed-experiment" && p.status !== "exercise");
+  const failed = all.filter((p) => p.status === "failed-experiment");
+
   return (
     <main className="mx-auto max-w-3xl px-6 pb-24 pt-10 sm:px-8">
       <nav className="font-lab mb-14 flex items-center gap-6 text-xs tracking-[0.2em] text-[var(--muted)]">
@@ -31,6 +36,9 @@ export default function ProfilePage() {
         </Link>
         <Link href="/face" className="transition-colors hover:text-[var(--text)]">
           THE FACE
+        </Link>
+        <Link href="/notes" className="transition-colors hover:text-[var(--text)]">
+          DEADNOTE
         </Link>
       </nav>
 
@@ -51,8 +59,8 @@ export default function ProfilePage() {
           </a>
         </div>
         <p className="font-lab mt-8 border-l-2 border-[var(--line)] pl-4 text-xs leading-6 text-[var(--muted)]">
-          v0.1 — the structure is real, the details are still being filled. Every status badge on
-          this page is honest by design: nothing here is called delivered unless it was.
+          Every status badge on this page is honest by design: nothing here is called delivered
+          unless a real client has it in their hands.
         </p>
       </header>
 
@@ -60,36 +68,40 @@ export default function ProfilePage() {
       <section id="work" className="mt-20 scroll-mt-24">
         <h2 className="font-lab text-xs tracking-[0.35em] text-[var(--machine)]">BUILT — THE MACHINE SIDE</h2>
         <div className="mt-6 space-y-6">
-          {projects.map((p) => (
-            <article key={p.slug} className="rounded-md border border-[var(--line)] bg-[var(--bg-raise)] p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="font-display text-xl font-bold">{p.title}</h3>
-                <StatusBadge status={p.status} />
-              </div>
-              <p className="font-lab mt-3 text-xs leading-5 text-[var(--muted)]">{p.honestLine}</p>
-              <p className="mt-3 leading-7 text-[var(--text)]/90">{p.summary}</p>
-            </article>
+          {main.map((p) => (
+            <Link key={p.slug} href={`/work/${p.slug}`} className="block">
+              <article className="rounded-md border border-[var(--line)] bg-[var(--bg-raise)] p-6 transition-colors hover:border-[var(--machine)]/50">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="font-display text-xl font-bold">{p.title}</h3>
+                  <StatusBadge status={p.status} />
+                </div>
+                <p className="font-lab mt-3 text-xs leading-5 text-[var(--muted)]">{p.honestLine}</p>
+                <p className="mt-3 leading-7 text-[var(--text)]/90">{p.summary}</p>
+              </article>
+            </Link>
           ))}
         </div>
       </section>
 
       {/* failed experiments */}
       <section id="experiments" className="mt-20 scroll-mt-24">
-        <h2 className="font-lab text-xs tracking-[0.35em] text-[var(--human)]">FAILED EXPERIMENTS</h2>
+        <h2 className="font-lab text-xs tracking-[0.35em] text-[var(--human)]">FAILED — SAID OUT LOUD</h2>
         <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--muted)]">
           What I believed, what broke, what changed my mind — failure written up properly builds
           more trust than another success card.
         </p>
         <div className="mt-6 space-y-6">
-          {failedExperiments.map((p) => (
-            <article key={p.slug} className="rounded-md border border-[var(--line)] bg-[var(--bg-raise)] p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="font-display text-xl font-bold">{p.title}</h3>
-                <StatusBadge status={p.status} />
-              </div>
-              <p className="font-lab mt-3 text-xs leading-5 text-[var(--muted)]">{p.honestLine}</p>
-              <p className="mt-3 leading-7 text-[var(--text)]/90">{p.summary}</p>
-            </article>
+          {failed.map((p) => (
+            <Link key={p.slug} href={`/work/${p.slug}`} className="block">
+              <article className="rounded-md border border-[var(--line)] bg-[var(--bg-raise)] p-6 transition-colors hover:border-[var(--human)]/50">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="font-display text-xl font-bold">{p.title}</h3>
+                  <StatusBadge status={p.status} />
+                </div>
+                <p className="font-lab mt-3 text-xs leading-5 text-[var(--muted)]">{p.honestLine}</p>
+                <p className="mt-3 leading-7 text-[var(--text)]/90">{p.summary}</p>
+              </article>
+            </Link>
           ))}
         </div>
       </section>
@@ -101,14 +113,15 @@ export default function ProfilePage() {
           "Suppose I died today…"
         </blockquote>
         <p className="mt-5 max-w-xl leading-7 text-[var(--muted)]">
-          Notes written against mortality, one day at a time. On the full site each published entry
-          becomes a walkable scene — the text arrives paragraph by paragraph while the backdrop
-          carries the mood, and you can stop anywhere and talk about it.
+          Notes written against mortality, one day at a time — ages 23 to 30. Four entries are
+          published; the rest wait for review.
         </p>
-        <p className="font-lab mt-5 text-xs leading-6 text-[var(--muted)]">
-          STATUS: entries under review. Publish gate — "would I be comfortable with a hiring manager
-          reading this the night before my interview?"
-        </p>
+        <Link
+          href="/notes"
+          className="font-lab mt-6 inline-block rounded-sm border border-[var(--human)]/50 bg-[var(--human)]/5 px-6 py-3 text-xs tracking-[0.25em] text-[var(--human-soft)] transition-all hover:bg-[var(--human)]/15"
+        >
+          READ THE NOTES →
+        </Link>
       </section>
 
       {/* services */}
@@ -147,7 +160,7 @@ export default function ProfilePage() {
       </section>
 
       <footer className="font-lab mt-24 border-t border-[var(--line)] pt-6 text-[10px] tracking-[0.2em] text-[var(--muted)]">
-        ANSON WORLD · v0.1 PROTOTYPE · BUILT IN THE OPEN — HONESTY AS AESTHETIC
+        ANSON WORLD · BUILT IN THE OPEN — HONESTY AS AESTHETIC
       </footer>
     </main>
   );

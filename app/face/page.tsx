@@ -55,7 +55,7 @@ export default function FacePage() {
 
       {/* right half — MEANING, backed by the white void (E-final) */}
       <Link
-        href="/profile#philosophy"
+        href="/notes"
         className="group relative flex flex-1 grow items-center justify-center overflow-hidden transition-all duration-500 hover:grow-[1.25]"
       >
         <div

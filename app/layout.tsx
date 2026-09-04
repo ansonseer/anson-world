@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://ansonseer.world"),
   title: "ANSON WORLD — an explorable digital self",
   description:
-    "Part portfolio, part autobiography, part philosophy archive, part AI interface. You don't browse it. You enter it.",
+    "Part portfolio, part autobiography, part philosophy archive. You don't browse it. You enter it.",
   icons: { icon: "/icon.svg" },
   openGraph: {
     title: "ANSON WORLD — an explorable digital self",
@@ -29,10 +29,30 @@ export const metadata: Metadata = {
   },
 };
 
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Anson Sun",
+  alternateName: "Ansonseer",
+  url: "https://ansonseer.world",
+  image: "https://ansonseer.world/avatar.jpg",
+  email: "mailto:suneric0228@gmail.com",
+  jobTitle: "AI Engineer & Builder",
+  address: { "@type": "PostalAddress", addressLocality: "Sydney", addressCountry: "AU" },
+  alumniOf: { "@type": "CollegeOrUniversity", name: "The University of Queensland" },
+  sameAs: ["https://github.com/ansonseer", "https://x.com/Ansonseer"],
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${syne.variable} ${plexMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
+      </body>
     </html>
   );
 }

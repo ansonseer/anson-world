@@ -1,4 +1,10 @@
-# P0 签核状态 — 更新于 2026-08-13
+# P0 签核状态 — 更新于 2026-09-04
+
+## 2026-09-04 增量
+- **A2 完结** ✅：green 名单（day-1/7/10/12 + About）由 Ao 确认，五个文件已格式化落进 [content/deadnote/](content/deadnote)（publish: true）。黄牌 4/6/11/15 留待二期改写。
+- **交付细节到位** ✅：Shoe Locator 完整弧线（V1 未部署 → 借主管的嘴 → 付费试点交付，两次扫码定位）与兽医诊所 WeChat 助手（一期已打通幂等 webhook；二期 RAG+护栏+评测集开发中）已写入 facts.md v3、work.md、两个项目页与 profile 卡片。**⚠️ 待 Ao 过目：我把"物流找货系统"与 Shoe Locator 认定为同一项目合并叙事（同公司/同栈），如果其实是两个项目，回一句我拆开。**
+- **首个 git commit** ✅：`d257fca`，branch `main`，48 files。随时可 push 上 GitHub → Vercel 导入。
+- 仍缺：A-final（Flux 版 Split Face 未落盘，iCloud 里只有 Seedance 备用版已归档）、B2/F-neg 高清、域名购买、价格带校准、B4 素材。
 
 > 原始 gate（PLAN §9）：facts.md 签核 + DEADNOTE 发布清单。Ao 已改序：前端先行，内容并行推进。
 

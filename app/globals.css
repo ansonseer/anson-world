@@ -60,3 +60,43 @@ body {
   .fade-up { animation: none; }
   .seam-glow { animation: none; }
 }
+
+/* rendered markdown bodies (DEADNOTE entries, project pages) */
+.note-body h1,
+.note-body h2,
+.note-body h3 {
+  font-family: var(--font-syne), var(--font-inter), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 2em 0 0.6em;
+  color: var(--text);
+}
+.note-body h1 { font-size: 1.35rem; }
+.note-body h2 { font-size: 1.15rem; }
+.note-body h3 { font-size: 1rem; }
+.note-body p { margin: 1.1em 0; }
+.note-body blockquote {
+  border-left: 2px solid var(--human);
+  padding-left: 1rem;
+  margin: 1.4em 0;
+  color: var(--human-soft);
+}
+.note-body a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.note-body a:hover { color: var(--human-soft); }
+.note-body hr { border-color: var(--line); margin: 2em 0; }
+.note-body ul,
+.note-body ol { padding-left: 1.4em; margin: 1.1em 0; }
+.note-body li { margin: 0.4em 0; }
+.note-body strong { color: var(--text); }
+.note-body code {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.85em;
+  background: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+}
