@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import FaceAtmosphere from "@/components/ui/FaceAtmosphere";
 
 export const metadata: Metadata = {
   title: "The Face — UTILITY / MEANING · Anson World",
@@ -86,6 +87,9 @@ export default function FacePage() {
           </div>
         </div>
       </Link>
+
+      {/* living atmosphere: darkness devouring on the left, rings of light on the right */}
+      <FaceAtmosphere />
 
       {/* frame chrome */}
       <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between p-6 sm:p-10">

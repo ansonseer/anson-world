@@ -24,6 +24,98 @@ function blend01(x: number) {
   return s * s * (3 - 2 * s);
 }
 
+function easeInOut(x: number) {
+  return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+}
+
+/* The Subject's head: skin that cracks into machine, right half first.
+   uProgress 0 → 1 moves the frontier across the face; cracks are Voronoi
+   cell edges that glow in the signal colour. */
+const CRACK_VERT = /* glsl */ `
+  varying vec3 vPos;
+  varying vec3 vNormal;
+  void main() {
+    vPos = position;
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const CRACK_FRAG = /* glsl */ `
+  uniform float uTime;
+  uniform float uProgress;
+  uniform vec3 uSkin;
+  uniform vec3 uAlloy;
+  uniform vec3 uGlow;
+  varying vec3 vPos;
+  varying vec3 vNormal;
+
+  vec3 hash3(vec3 p) {
+    p = vec3(dot(p, vec3(127.1, 311.7, 74.7)),
+             dot(p, vec3(269.5, 183.3, 246.1)),
+             dot(p, vec3(113.5, 271.9, 124.6)));
+    return fract(sin(p) * 43758.5453123);
+  }
+  vec2 voronoi(vec3 p) {
+    vec3 n = floor(p);
+    vec3 f = fract(p);
+    float f1 = 8.0;
+    float f2 = 8.0;
+    for (int k = -1; k <= 1; k++)
+    for (int j = -1; j <= 1; j++)
+    for (int i = -1; i <= 1; i++) {
+      vec3 g = vec3(float(i), float(j), float(k));
+      vec3 o = hash3(n + g);
+      vec3 r = g + o - f;
+      float d = dot(r, r);
+      if (d < f1) { f2 = f1; f1 = d; } else if (d < f2) { f2 = d; }
+    }
+    return vec2(sqrt(f1), sqrt(f2));
+  }
+  void main() {
+    vec2 v = voronoi(vPos * 7.5);
+    float edge = v.y - v.x;
+    float crack = 1.0 - smoothstep(0.0, 0.055, edge);
+    float jag = (hash3(floor(vPos * 11.0)).x - 0.5) * 0.16;
+    // the frontier sweeps from the right edge of the face to the centre line — never past it:
+    // at full progress exactly half the face is machine, the other half stays human
+    float frontier = 0.27 - uProgress * 0.27;
+    float x = vPos.x + jag;
+    float mech = smoothstep(frontier - 0.04, frontier + 0.04, x);
+    float leak = crack * smoothstep(frontier - 0.2, frontier + 0.02, x);
+
+    vec3 L = normalize(vec3(0.55, 0.85, 0.9));
+    float diff = 0.3 + 0.7 * max(dot(normalize(vNormal), L), 0.0);
+    vec3 skin = uSkin * diff;
+    float pulse = 0.7 + 0.3 * sin(uTime * 2.2);
+    vec3 alloy = uAlloy * (0.25 + 0.75 * diff);
+    vec3 mechCol = mix(alloy, uGlow * (0.8 + 0.6 * pulse), crack);
+
+    vec3 col = mix(skin, mechCol, mech);
+    col = mix(col, uGlow * pulse, leak * (1.0 - mech) * 0.85);
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+
+function useCrackMaterial() {
+  const mat = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uProgress: { value: 0 },
+          uSkin: { value: new THREE.Color("#cbbfae") },
+          uAlloy: { value: new THREE.Color("#8fa8bf") },
+          uGlow: { value: new THREE.Color(SIGNAL) },
+        },
+        vertexShader: CRACK_VERT,
+        fragmentShader: CRACK_FRAG,
+      }),
+    [],
+  );
+  useEffect(() => () => mat.dispose(), [mat]);
+  return mat;
+}
+
 function Figure({
   variant,
   position,
@@ -43,6 +135,7 @@ function Figure({
   const bodyMat = useRef<THREE.MeshStandardMaterial>(null);
   const coreMat = useRef<THREE.MeshStandardMaterial>(null);
   const hintMat = useRef<THREE.MeshBasicMaterial>(null);
+  const crackMat = useCrackMaterial();
   const [hover, setHover] = useState(false);
 
   useEffect(() => {
@@ -73,19 +166,25 @@ function Figure({
       const phase = (t * 0.32) % 2;
       const tri = phase < 1 ? phase : 2 - phase;
       const dir = phase < 1 ? 1 : -1;
-      g.position.x = 1.5 + tri * 1.7;
+      g.position.x = 1.2 + tri * 1.6;
       g.position.y = Math.abs(Math.sin(t * 3.2)) * 0.02;
       const targetRot = dir > 0 ? Math.PI / 2 : -Math.PI / 2;
       g.rotation.y += (targetRot - g.rotation.y) * 0.07;
       h.rotation.y = Math.sin(t * 0.9) * 0.55;
-      if (headMat.current)
-        headMat.current.emissiveIntensity = (hover ? 0.75 : 0.45) + Math.sin(t * 2.0) * 0.2;
-      if (coreMat.current) coreMat.current.emissiveIntensity = 1.3 + Math.sin(t * 2.0) * 0.5;
+      // becoming machine: 12s of spreading cracks, 5s fully split, 3s snapped back
+      const ct = t % 20;
+      let p = ct < 12 ? easeInOut(ct / 12) : ct < 17 ? 1 : 1 - (ct - 17) / 3;
+      if (hover) p = 1;
+      crackMat.uniforms.uProgress.value += (p - crackMat.uniforms.uProgress.value) * 0.12;
+      crackMat.uniforms.uTime.value = t;
+      if (coreMat.current)
+        coreMat.current.emissiveIntensity =
+          0.2 + p * 1.3 + Math.sin(t * 2.0) * 0.3 * p;
     }
 
-    // hover glow on the body (the AI keeps a faint idle sheen so its form reads in the dark)
+    // hover glow on the body (the Subject keeps a faint cold sheen so its form reads in the dark)
     if (bodyMat.current) {
-      const target = hover ? 0.35 : variant === "ai" ? 0.07 : 0;
+      const target = hover ? 0.3 : variant === "ai" ? 0.04 : 0;
       bodyMat.current.emissiveIntensity +=
         (target - bodyMat.current.emissiveIntensity) * 0.15;
     }
@@ -96,9 +195,11 @@ function Figure({
   });
 
   const human = variant === "human";
-  const bodyColor = human ? "#d8d2c6" : "#aebfd2"; // lab-coat off-white vs machined alloy
-  const rough = human ? 0.92 : 0.35;
-  const metal = human ? 0.02 : 0.5; // high metalness reads pitch-black without an env map
+  // the Observer wears the lab coat; the Subject wears the grey hoodie from the reference photo —
+  // the machine shows only where the face cracks
+  const bodyColor = human ? "#d8d2c6" : "#b3afa8";
+  const rough = human ? 0.92 : 0.95;
+  const metal = 0.02;
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
@@ -144,23 +245,29 @@ function Figure({
           />
         </mesh>
       )}
-      <mesh
-        ref={head}
-        position={[0, 1.78, 0]}
-        onClick={handleClick}
-        onPointerOver={over}
-        onPointerOut={out}
-      >
-        <sphereGeometry args={[0.21, 32, 32]} />
-        <meshStandardMaterial
-          ref={headMat}
-          color={human ? "#cbbfae" : "#b8c8da"}
-          roughness={human ? 0.75 : 0.3}
-          metalness={human ? 0 : 0.5}
-          emissive={human ? "#000000" : "#3b7ea8"}
-          emissiveIntensity={human ? 0 : 0.45}
-        />
-      </mesh>
+      {human ? (
+        <mesh
+          ref={head}
+          position={[0, 1.78, 0]}
+          onClick={handleClick}
+          onPointerOver={over}
+          onPointerOut={out}
+        >
+          <sphereGeometry args={[0.21, 32, 32]} />
+          <meshStandardMaterial ref={headMat} color="#cbbfae" roughness={0.75} metalness={0} />
+        </mesh>
+      ) : (
+        <mesh
+          ref={head}
+          position={[0, 1.78, 0]}
+          material={crackMat}
+          onClick={handleClick}
+          onPointerOver={over}
+          onPointerOut={out}
+        >
+          <sphereGeometry args={[0.21, 48, 48]} />
+        </mesh>
+      )}
 
       {hint && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
@@ -287,7 +394,7 @@ function ObservationStation() {
   });
   const glowTarget = useMemo(() => {
     const o = new THREE.Object3D();
-    o.position.set(2.5, 1.2, 0);
+    o.position.set(2.0, 1.2, 0);
     return o;
   }, []);
   const legPositions: [number, number, number][] = [
@@ -297,7 +404,7 @@ function ObservationStation() {
     [-0.26, 0.48, -0.62],
   ];
   return (
-    <group position={[0.1, 0, 0.35]} rotation={[0, -0.55, 0]}>
+    <group position={[-1.0, 0, 0.35]} rotation={[0, -0.7, 0]}>
       {/* desk runs front-to-back; angled so the audience sees the scan too */}
       <mesh position={[0, 0.98, 0]} castShadow>
         <boxGeometry args={[0.7, 0.06, 1.5]} />
@@ -352,7 +459,7 @@ function ObservationStation() {
    column through the fog, pedestal with a gridded globe underneath */
 function SpecimenLamp() {
   return (
-    <group position={[-4.0, 0, -0.9]} rotation={[0, 0.3, 0]}>
+    <group position={[-3.6, 0, -1.6]} rotation={[0, 0.3, 0]}>
       <mesh position={[0, 3.7, 0]}>
         <cylinderGeometry args={[0.015, 0.015, 1.3, 8]} />
         <meshStandardMaterial color="#1a2028" roughness={0.6} />
@@ -452,6 +559,39 @@ function Room() {
   );
 }
 
+/* the stage is cut in two: a line of light down the middle, warm floor on the
+   Observer's side, cold floor on the Subject's */
+function Divider() {
+  const mat = useRef<THREE.MeshBasicMaterial>(null);
+  const light = useRef<THREE.PointLight>(null);
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    if (mat.current) mat.current.opacity = 0.55 + Math.sin(t * 1.1) * 0.2;
+    if (light.current) light.current.intensity = 0.8 + Math.sin(t * 1.1) * 0.2;
+  });
+  return (
+    <group>
+      <mesh position={[0, 1.7, -0.4]}>
+        <boxGeometry args={[0.014, 3.4, 0.014]} />
+        <meshBasicMaterial ref={mat} color={SEAM} transparent opacity={0.7} />
+      </mesh>
+      <mesh position={[0, 0.006, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.02, 14]} />
+        <meshBasicMaterial color={SEAM} transparent opacity={0.25} depthWrite={false} />
+      </mesh>
+      <pointLight ref={light} position={[0, 1.9, 0.3]} color={SEAM} intensity={0.9} distance={5} decay={0} />
+      <mesh position={[-10, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[20, 30]} />
+        <meshBasicMaterial color={WARM} transparent opacity={0.035} depthWrite={false} />
+      </mesh>
+      <mesh position={[10, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[20, 30]} />
+        <meshBasicMaterial color={COLD} transparent opacity={0.05} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
 function Dust() {
   const points = useRef<THREE.Points>(null);
   const positions = useMemo(() => {
@@ -479,12 +619,12 @@ function Dust() {
 function Lights() {
   const humanTarget = useMemo(() => {
     const o = new THREE.Object3D();
-    o.position.set(-1.5, 1.1, 0.55);
+    o.position.set(-2.2, 1.1, 0.5);
     return o;
   }, []);
   const aiTarget = useMemo(() => {
     const o = new THREE.Object3D();
-    o.position.set(2.5, 1.1, 0);
+    o.position.set(2.0, 1.1, 0);
     return o;
   }, []);
   return (
@@ -525,13 +665,14 @@ function Lights() {
 function CameraRig({ entering, onEntered, reducedMotion }: Omit<LabProps, "onRequestEnter">) {
   const { camera, pointer, size } = useThree();
   const aspect = size.width / Math.max(1, size.height);
-  const restZ = aspect < 0.8 ? 8.4 : aspect < 1 ? 8.0 : aspect < 1.2 ? 6.6 : 5.2;
-  const lookX = aspect < 1 ? 0.15 : 0.55;
-  const baseX = aspect < 1 ? -0.05 : -0.35;
+  const restZ = aspect < 0.8 ? 8.6 : aspect < 1 ? 8.2 : aspect < 1.2 ? 6.8 : 5.4;
+  // bisected stage: camera dead centre, the seam is the axis
+  const lookX = 0;
+  const baseX = 0;
   const baseZ = useRef(reducedMotion ? restZ : restZ + 1.6);
   const done = useRef(false);
   // entering = flying into the Observer's head
-  const enterTarget = useMemo(() => new THREE.Vector3(-1.5, 1.78, 0.58), []);
+  const enterTarget = useMemo(() => new THREE.Vector3(-2.2, 1.78, 0.52), []);
 
   useFrame((_, dt) => {
     const d = Math.min(dt, 0.05);
@@ -570,17 +711,18 @@ function SceneContent({ entering, onEntered, onRequestEnter, reducedMotion }: La
       <CameraRig entering={entering} onEntered={onEntered} reducedMotion={reducedMotion} />
       <Lights />
       <Room />
+      <Divider />
       <BackgroundBench />
       <SpecimenLamp />
       <ObservationStation />
       <Figure
         variant="human"
-        position={[-1.5, 0, 0.55]}
+        position={[-2.2, 0, 0.5]}
         label="ENTER THE OBSERVER"
         hint
         onSelect={select}
       />
-      <Figure variant="ai" position={[2.5, 0, 0]} label="AI ANSON — THE SUBJECT" onSelect={select} />
+      <Figure variant="ai" position={[2.0, 0, 0]} label="THE SUBJECT — ANSON, BECOMING MACHINE" onSelect={select} />
       {rings.map((r) => (
         <ShockRing
           key={r.id}
