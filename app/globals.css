@@ -61,6 +61,25 @@ body {
   .seam-glow { animation: none; }
 }
 
+/* rooms: slow drift on the backdrop; light rooms flip the body palette */
+@keyframes roomDrift {
+  0% { transform: scale(1.06) translate(0, 0); }
+  50% { transform: scale(1.1) translate(-6px, -4px); }
+  100% { transform: scale(1.06) translate(0, 0); }
+}
+.room-drift { animation: roomDrift 28s ease-in-out infinite; }
+.room-light .note-body h1,
+.room-light .note-body h2,
+.room-light .note-body h3,
+.room-light .note-body strong,
+.room-light .note-body a { color: #241c12; }
+.room-light .note-body blockquote { color: #5b4a33; border-left-color: #8a6f4d; }
+.room-light .note-body a:hover { color: #8a6f4d; }
+.room-light .note-body code { background: rgba(255,255,255,0.5); border-color: rgba(36,28,18,0.2); }
+@media (prefers-reduced-motion: reduce) {
+  .room-drift { animation: none; }
+}
+
 /* rendered markdown bodies (DEADNOTE entries, project pages) */
 .note-body h1,
 .note-body h2,

@@ -16,7 +16,7 @@ export default function FacePage() {
     <main className="fixed inset-0 flex flex-col overflow-hidden bg-[var(--bg)] sm:flex-row">
       {/* left half — UTILITY, backed by the locked B-1 key art (the dark lab) */}
       <Link
-        href="/profile#work"
+        href="/world/machine"
         className="group relative flex flex-1 grow items-center justify-center overflow-hidden transition-all duration-500 hover:grow-[1.25]"
       >
         <div
@@ -56,7 +56,7 @@ export default function FacePage() {
 
       {/* right half — MEANING, backed by the white void (E-final) */}
       <Link
-        href="/notes"
+        href="/world/human"
         className="group relative flex flex-1 grow items-center justify-center overflow-hidden transition-all duration-500 hover:grow-[1.25]"
       >
         <div
@@ -111,7 +111,7 @@ export default function FacePage() {
           <div className="rounded-sm bg-black/50 px-4 py-2 text-center backdrop-blur-sm">
             <p className="font-display text-sm text-[#e6e9ee]">What is a human for?</p>
             <p className="font-lab mt-1 text-[9px] tracking-[0.2em] text-[#8b94a3]">
-              PHASE 2: EACH HALF OPENS INTO A FULL 3D WORLD
+              CHOOSE A SIDE · EACH HALF OPENS INTO A WORLD OF ROOMS
             </p>
           </div>
         </div>

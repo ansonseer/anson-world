@@ -1,0 +1,76 @@
+{
+  "_readme": "Room graph for the explorable world (PLAN §5.4). Keys are room paths under /world/. A door's `to` is another room path, or an absolute site URL. `content` binds a room to a project or note from /content. Backdrop keys map to files in public/worlds (see lib/worlds.ts); omit to use the side's default. Adding a room = adding an entry here — no code.",
+  "rooms": {
+    "machine": {
+      "side": "machine",
+      "title": "THE MACHINE",
+      "subtitle": "Utility — where I build, sell, and keep score",
+      "intro": "Everything on this side was built for a real operation or a real client. The status badges tell the truth, including the failure. Pick a door.",
+      "backdrop": "lab-hero",
+      "doors": [
+        { "to": "machine/field", "label": "FIELD WORK", "hint": "Cases from a warehouse floor and a clinic front desk" },
+        { "to": "machine/systems", "label": "AI SYSTEMS", "hint": "Instruments I build for myself" },
+        { "to": "/profile#services", "label": "WORK WITH ME", "hint": "The audit, the ladder, six commitments" }
+      ]
+    },
+    "machine/field": {
+      "side": "machine",
+      "title": "FIELD WORK",
+      "subtitle": "Forward-deployed — I walk into the operation before I build for it",
+      "intro": "Three cases. Two delivered, one that failed. All three are here, because that is how you should judge a builder.",
+      "backdrop": "lab-hero",
+      "doors": [
+        { "to": "machine/field/warehouse", "label": "THE WAREHOUSE", "hint": "Shoe Locator · paid pilot delivered" },
+        { "to": "machine/field/clinic", "label": "THE CLINIC", "hint": "WeChat assistant · phase 1 live" },
+        { "to": "machine/field/retail", "label": "THE SHOP", "hint": "Pricing tool · the failed delivery" }
+      ]
+    },
+    "machine/field/warehouse": {
+      "side": "machine",
+      "title": "THE WAREHOUSE",
+      "subtitle": "A Sydney footwear logistics floor that ran on one worker's memory",
+      "backdrop": "lab-hero",
+      "content": { "type": "project", "slug": "shoe-locator" }
+    },
+    "machine/field/clinic": {
+      "side": "machine",
+      "title": "THE CLINIC",
+      "subtitle": "A vet clinic's front desk, drowning in the same calls every day",
+      "backdrop": "lab-hero",
+      "content": { "type": "project", "slug": "clinic-wechat-bot" }
+    },
+    "machine/field/retail": {
+      "side": "machine",
+      "title": "THE SHOP",
+      "subtitle": "Two stores, one ledger, and a delivery that did not land",
+      "backdrop": "lab-hero",
+      "content": { "type": "project", "slug": "retail-pricing-tool" }
+    },
+    "machine/systems": {
+      "side": "machine",
+      "title": "AI SYSTEMS",
+      "subtitle": "Instruments I build for myself before I sell anything",
+      "backdrop": "lab-hero",
+      "content": { "type": "project", "slug": "crew" }
+    },
+    "human": {
+      "side": "human",
+      "title": "THE HUMAN",
+      "subtitle": "Meaning — what I think about when the work stops",
+      "intro": "This side is slower. Nothing here is for sale.",
+      "note": "Memory, People, Questions and Beauty are being written. They will appear here as doors when they are ready — not before.",
+      "backdrop": "white-void",
+      "doors": [
+        { "to": "human/deadnote", "label": "DEADNOTE", "hint": "Suppose I died today" }
+      ]
+    },
+    "human/deadnote": {
+      "side": "human",
+      "title": "DEADNOTE",
+      "subtitle": "Notes against mortality, 23 → 30",
+      "intro": "Each published day is a room. Walk in, read it a paragraph at a time, leave when you want.",
+      "backdrop": "double-warm",
+      "content": { "type": "deadnote-index" }
+    }
+  }
+}
